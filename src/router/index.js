@@ -1,27 +1,37 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
+import { createRouter, createWebHistory } from 'vue-router';
+import HomePage from '../pages/HomePage.vue';
+import FavoritesPage from '../pages/FavoritesPage.vue';
+import RegisterPage from '../pages/RegisterPage.vue';
+import LoginPage from '../pages/LoginPage.vue';
+import CryptoList from '../components/CryptoList.vue';
+import CryptoDetails from '../components/CryptoDetails.vue';
+import store from '../store'; 
 
 const routes = [
-  {
-    path: '/',
-    name: 'home',
-    component: HomeView
-  },
-  {
-    path: '/about',
-    name: 'about',
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: function () {
-      return import(/* webpackChunkName: "about" */ '../views/AboutView.vue')
-    }
-  }
-]
+  { path: '/', redirect: '/login' },
+  { path: '/cryptos', component: CryptoList },
+  { path: '/favorites', component: FavoritesPage },
+  { path: '/crypto/:id', component: CryptoDetails, props: true },
+  { path: '/register', component: RegisterPage },
+  { path: '/login', component: LoginPage },
+  { path: '/home', component: HomePage },
+];
 
 const router = createRouter({
   history: createWebHistory(process.env.BASE_URL),
-  routes
-})
+  routes,
+});
 
-export default router
+router.beforeEach((to, from, next) => {
+  const isAuthenticated = store.getters['auth/isAuthenticated'];
+  console.log(`Navegando a: ${to.path} Estado autenticado: ${isAuthenticated}`);
+
+  if (to.path !== '/login' && to.path !== '/register' && !isAuthenticated) {
+    console.log('redirigiendo al login.');
+    next('/login'); 
+  } else {
+    next(); 
+  }
+});
+
+export default router;
